@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.assessment.orders</groupId>
+    <artifactId>order-processor</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Using Java 25 per assessment requirements (records, pattern-matching switch,
+             sealed interfaces, virtual threads are supported). Ensure the Lambda runtime/
+             custom runtime matches Java 25 in your deployment environment. -->
+    </properties>
+
+    <!-- Pins Netty to patched versions, overriding whatever older version
+         AWS SDK v2's "sns" artifact pulls in transitively (via its
+         optional netty-nio-client). Fixes CVE-2025-58056, CVE-2025-58057,
+         CVE-2025-67735, and CVE-2026-33870. Run `mvn dependency:tree |
+         grep netty` after this to confirm the pinned version wins. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.125.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- AWS Lambda Java core: Context, RequestHandler -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
+        <!-- AWS Lambda Java events: SQSEvent -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+            <version>3.11.4</version>
+        </dependency>
+
+        <!-- AWS SDK v2: SnsClient -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.25.60</version>
+        </dependency>
+
+        <!-- Jackson for JSON (de)serialization, including record support -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.1</version>
+        </dependency>
+
+        <!-- JUnit 5 for the local/unit tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>order-processor</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
